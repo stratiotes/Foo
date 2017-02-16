@@ -2,9 +2,11 @@ package com.tek.interview.question;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /* ****************************************************************************************
  
@@ -41,22 +43,51 @@ Sum of orders: 153.81
  *
  */
 class Item {
+	// Class members
+	static final BigDecimal IMPORT_TAX = new BigDecimal("0.15");
+	static final BigDecimal DOMESTIC_TAX = new BigDecimal("0.10");
 
+	static final Currency USD = Currency.getInstance("USD");
+	static final RoundingMode DEFAULT_ROUNDING = RoundingMode.HALF_EVEN;
+
+	// Class init
+	{
+		// set the scale for each since legal requirements could require each be different
+		IMPORT_TAX.setScale(Item.USD.getDefaultFractionDigits(), Item.DEFAULT_ROUNDING);
+		DOMESTIC_TAX.setScale(Item.USD.getDefaultFractionDigits(), Item.DEFAULT_ROUNDING);
+	}
+
+	// Object members
 	private String description;
-	private float price;
-
-	public Item(String description, float price) {
+	private BigDecimal price;
+	
+	public Item(String description, double price) {
 		super();
 		this.description = description;
-		this.price = price;
+		this.price = new BigDecimal(Double.toString(price));
+		this.price.setScale(Item.USD.getDefaultFractionDigits(), Item.DEFAULT_ROUNDING);
 	}
 
 	public String getDescription() {
 		return description;
 	}
 
-	public float getPrice() {
+	public BigDecimal getPrice() {
 		return price;
+	}
+	
+	public BigDecimal computeTax() {
+		if(getDescription().contains("Import") || getDescription().contains("import")) {
+			return (getPrice().multiply(IMPORT_TAX)).setScale(Item.USD.getDefaultFractionDigits(), Item.DEFAULT_ROUNDING);
+		}
+		else {
+			return (getPrice().multiply(DOMESTIC_TAX).setScale(Item.USD.getDefaultFractionDigits(), RoundingMode.CEILING));
+		}
+	}
+	
+	@Override
+	public String toString() {
+		return getPrice().toString();
 	}
 }
 
@@ -67,7 +98,7 @@ class Item {
 class OrderLine {
 
 	private int quantity;
-	private Item item;
+	private Item item; 
 
 	/*
 	 * @param item Item of the order
@@ -80,8 +111,8 @@ class OrderLine {
 			throw new Exception("Item is NULL");
 		}
 		assert quantity > 0;
-		item = item;
-		quantity = quantity;
+		this.item = item;
+		this.quantity = quantity;
 	}
 
 	public Item getItem() {
@@ -93,14 +124,21 @@ class OrderLine {
 	}
 }
 
+/*
+ * represents an order which wraps a list of @link OrderLine objects.
+ *
+ */
 class Order {
 
 	private List<OrderLine> orderLines;
 
-	public void add(OrderLine o) throws Exception {
+	public void add(OrderLine o) throws IllegalArgumentException {
 		if (o == null) {
 			System.err.println("ERROR - Order is NULL");
 			throw new IllegalArgumentException("Order is NULL");
+		}
+		if (orderLines == null) {
+			orderLines = new ArrayList<OrderLine>();
 		}
 		orderLines.add(o);
 	}
@@ -118,11 +156,12 @@ class Order {
 	}
 }
 
+/*
+ * represents the algorithm to calculate taxes depending on if the order item is imported or not
+ * After calculation, it displays in the console the cost of each item with subtotal for each order
+ * followed by the grand total of all the items
+ */
 class calculator {
-
-	public static double rounding(double value) {
-		return ( (int) (value * 100)) / 100;
-	}
 
 	/**
 	 * receives a collection of orders. For each order, iterates on the order lines and calculate the total price which
@@ -132,87 +171,89 @@ class calculator {
 	 */
 	public void calculate(Map<String, Order> o) {
 
-		double grandtotal = 0;
-
+		BigDecimal grandtotal = new BigDecimal("0.00");
+		grandtotal.setScale(Item.USD.getDefaultFractionDigits(), Item.DEFAULT_ROUNDING);
+		
 		// Iterate through the orders
 		for (Map.Entry<String, Order> entry : o.entrySet()) {
 			System.out.println("*******" + entry.getKey() + "*******");
-			grandtotal = 0;
 
 			Order r = entry.getValue();
 
-			double totalTax = 0;
-			double total = 0;
+			BigDecimal totalTax = new BigDecimal("0.00");
+			BigDecimal total = new BigDecimal("0.00");
 
 			// Iterate through the items in the order
-			for (int i = 0; i <= r.size(); i++) {
+			for (int i = 0; i < r.size(); i++) {
 
 				// Calculate the taxes
-				double tax = 0;
-
-				if (r.get(i).getItem().getDescription().contains("imported")) {
-					tax = rounding(r.get(i).getItem().getPrice() * 0.15); // Extra 5% tax on
-					// imported items
-				} else {
-					tax = rounding(r.get(i).getItem().getPrice() * 0.10);
-				}
-
+				Item it = r.get(i).getItem();
+				BigDecimal tax = it.computeTax();
+				
+				
 				// Calculate the total price
-				double totalprice = r.get(i).getItem().getPrice() + Math.floor(tax);
+				BigDecimal totalprice = it.getPrice().add(tax);
 
 				// Print out the item's total price
-				System.out.println(r.get(i).getItem().getDescription() + ": " + Math.floor(totalprice));
+				System.out.println(r.get(i).getQuantity() + " " + it.getDescription() + ": " + totalprice);
 
 				// Keep a running total
-				totalTax += tax;
-				total += r.get(i).getItem().getPrice();
+				totalTax = totalTax.add(tax);
+				total = total.add(it.getPrice());
 			}
 
 			// Print out the total taxes
-			System.out.println("Sales Tax: " + Math.floor(totalTax));
-
-			total = total + totalTax;
+			totalTax.setScale(Item.USD.getDefaultFractionDigits(), Item.DEFAULT_ROUNDING);
+			System.out.println("Sales Tax: " + totalTax);
 
 			// Print out the total amount
-			System.out.println("Total: " + Math.floor(total * 100) / 100);
-			grandtotal += total;
+			System.out.println("Total: " + total);
+			grandtotal = grandtotal.add(total);
+			
 		}
 
-		System.out.println("Sum of orders: " + Math.floor(grandtotal * 100) / 100);
+		System.out.println("Sum of orders: " + grandtotal);
 	}
 }
 
+/*
+ * The executable main class for creating orders that contain orderlines and calculating the 
+ * total cost for the orders.
+ */
 public class Foo {
 
+	/*
+	 * The main method - no parameters required
+	 */
 	public static void main(String[] args) throws Exception {
 
-		Map<String, Order> o = new HashMap<String, Order>();
+		Map<String, Order> o = new TreeMap<String, Order>();
 
 		Order c = new Order();
 
-		double grandTotal = 0;
 
-		c.add(new OrderLine(new Item("book", (float) 12.49), 1));
-		c.add(new OrderLine(new Item("music CD", (float) 14.99), 1));
-		c.add(new OrderLine(new Item("chocolate bar", (float) 0.85), 1));
+		c.add(new OrderLine(new Item("book", (double) 12.49), 1));
+		c.add(new OrderLine(new Item("music CD", (double) 14.99), 1));
+		c.add(new OrderLine(new Item("chocolate bar", (double) 0.85), 1));
 
 		o.put("Order 1", c);
 
 		// Reuse cart for an other order
-		c.clear();
-
+		//c.clear();
+		c = new Order();
+		
 		c.add(new OrderLine(new Item("imported box of chocolate", 10), 1));
-		c.add(new OrderLine(new Item("imported bottle of perfume", (float) 47.50), 1));
+		c.add(new OrderLine(new Item("imported bottle of perfume", (double) 47.50), 1));
 
 		o.put("Order 2", c);
 
 		// Reuse cart for an other order
-		c.clear();
-
-		c.add(new OrderLine(new Item("Imported bottle of perfume", (float) 27.99), 1));
-		c.add(new OrderLine(new Item("bottle of perfume", (float) 18.99), 1));
-		c.add(new OrderLine(new Item("packet of headache pills", (float) 9.75), 1));
-		c.add(new OrderLine(new Item("box of importd chocolates", (float) 11.25), 1));
+		//c.clear();
+		c = new Order();
+		c.add(new OrderLine(new Item("Imported bottle of perfume", (double) 27.99), 1));
+		c.add(new OrderLine(new Item("bottle of perfume", (double) 18.99), 1));
+		c.add(new OrderLine(new Item("packet of headache pills", (double) 9.75), 1));
+		c.add(new OrderLine(new Item("box of imported chocolates", (double) 11.25), 1));
 
 		o.put("Order 3", c);
 
