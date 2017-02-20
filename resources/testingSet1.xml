@@ -1,0 +1,53 @@
+<OrderSet>
+<Order ID="Order 1"> 
+	<OrderLine>
+		<Quantity>1</Quantity>
+		<Description>book</Description>
+		<Price>12.49</Price>
+	</OrderLine>
+	<OrderLine>
+		<Quantity>1</Quantity>
+		<Description>music CD</Description>
+		<Price>14.99</Price>
+	</OrderLine>
+	<OrderLine>
+		<Quantity>1</Quantity>
+		<Description>chocolate bar</Description>
+		<Price>0.85</Price>
+	</OrderLine>
+</Order>
+<Order ID="Order 2">
+	<OrderLine>
+		<Quantity>1</Quantity>
+		<Description>imported box of chocolate</Description>
+		<Price>10.00</Price>
+	</OrderLine>
+	<OrderLine>
+		<Quantity>1</Quantity>
+		<Description>imported bottle of perfume</Description>
+		<Price>47.50</Price>
+	</OrderLine>
+</Order>
+<Order ID="Order 3">
+	<OrderLine>
+		<Quantity>1</Quantity>
+		<Description>Imported bottle of perfume</Description>
+		<Price>27.99</Price>
+	</OrderLine>
+	<OrderLine>
+		<Quantity>1</Quantity>
+		<Description>bottle of perfume</Description>
+		<Price>18.99</Price>
+	</OrderLine>
+	<OrderLine>
+		<Quantity>1</Quantity>
+		<Description>packet of headache pills</Description>
+		<Price>9.75</Price>
+	</OrderLine>
+	<OrderLine>
+		<Quantity>1</Quantity>
+		<Description>box of imported chocolates</Description>
+		<Price>11.25</Price>
+	</OrderLine>
+</Order>
+</OrderSet>

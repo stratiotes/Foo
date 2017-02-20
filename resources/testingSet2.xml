@@ -1,0 +1,31 @@
+<OrderSet>
+<Order ID="One"> 
+	<OrderLine>
+		<Quantity>1</Quantity>
+		<Description>First of One</Description>
+		<Price>1.10</Price>
+	</OrderLine>
+	<OrderLine>
+		<Quantity>2</Quantity>
+		<Description>Second of One</Description>
+		<Price>2.22</Price>
+	</OrderLine>
+	<OrderLine>
+		<Quantity>3</Quantity>
+		<Description>Third of One</Description>
+		<Price>3.39</Price>
+	</OrderLine>
+</Order>
+<Order ID="Two Imports">
+	<OrderLine>
+		<Quantity>1</Quantity>
+		<Description>Imported One of Two</Description>
+		<Price>21.21</Price>
+	</OrderLine>
+	<OrderLine>
+		<Quantity>2</Quantity>
+		<Description>Item imported of Two</Description>
+		<Price>22.00</Price>
+	</OrderLine>
+</Order>
+</OrderSet>
